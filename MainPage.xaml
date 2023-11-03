@@ -15,6 +15,7 @@
         </Grid.RowDefinitions>
         <Grid.GestureRecognizers>
             <TapGestureRecognizer NumberOfTapsRequired="1" Tapped="SnapAction"/>
+            <TapGestureRecognizer NumberOfTapsRequired="3" Tapped="ToggleRecordAction"/>
             <SwipeGestureRecognizer Direction="Up,Down" Swiped="ToggleCamera"/>
             <SwipeGestureRecognizer Direction="Left,Right" Swiped="TogglePreviewVisibility"/>
         </Grid.GestureRecognizers>
