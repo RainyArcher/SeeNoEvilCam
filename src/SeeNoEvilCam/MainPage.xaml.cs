@@ -40,6 +40,7 @@ public partial class MainPage : ContentPage
 	{
 		MainThread.BeginInvokeOnMainThread(async () =>
 		{
+			await PermissionManager.CheckAndRequestCameraPermissions();
 			if (await cameraView.StartCameraAsync() != CameraResult.Success)
 			{
 				throw new Exception("Unable to start the camera");
