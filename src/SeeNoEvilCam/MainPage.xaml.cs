@@ -12,6 +12,7 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 		cameraView.Opacity = 0.0;
+		cameraView.ForceAutoFocus();
 		cameraView.CamerasLoaded += CameraView_CamerasLoaded;
 		_directoryLocation = "/storage/emulated/0/DCIM/NoEvilArchive";
 		_isRecording = false;
@@ -41,13 +42,30 @@ public partial class MainPage : ContentPage
 		MainThread.BeginInvokeOnMainThread(async () =>
 		{
 			await PermissionManager.CheckAndRequestCameraPermissions();
-			if (await cameraView.StartCameraAsync() != CameraResult.Success)
+			await cameraView.StopCameraAsync();
+			if (await cameraView.StartCameraAsync(SelectResolution()) != CameraResult.Success)
 			{
 				throw new Exception("Unable to start the camera");
 			}
 		});
 	}
-	
+
+	private Size SelectResolution()
+	{
+		Size resolution = new Size();
+		var availableResolutions = cameraView.Camera.AvailableResolutions;
+		foreach (var item in availableResolutions)
+		{
+			if (item.Height == item.Width)
+			{
+				resolution = item;
+				return resolution;
+			}
+		}
+		resolution = availableResolutions[0];
+		return resolution;
+	}
+
 	private async void SnapAction(object sender, EventArgs e)
 	{
 		try
@@ -69,7 +87,7 @@ public partial class MainPage : ContentPage
 			{
 				CreateDirectoryIfNeeded();
 				_isRecording = true;
-				var result = await cameraView.StartRecordingAsync(Path.Combine(_directoryLocation, $"NoEvilRecord_{DateTime.Now.Ticks}.mp4"), new Size(1088, 1088));
+				var result = await cameraView.StartRecordingAsync(Path.Combine(_directoryLocation, $"NoEvilRecord_{DateTime.Now.Ticks}.mp4"), SelectResolution());
 				if (!(result == CameraResult.Success))
 				{
 					Shell.Current.DisplayAlert("Permission Denied", "Failed to save the record - permission is denied", "OK",
@@ -88,8 +106,8 @@ public partial class MainPage : ContentPage
 			StopRecordingIfNeeded();
 		}
 	}
-	
-	private async void ToggleCamera(object sender, EventArgs e)
+
+	private void ToggleCamera(object sender, EventArgs e)
 	{
 		StopRecordingIfNeeded();
 		if (cameraView.Cameras.Count>1)
